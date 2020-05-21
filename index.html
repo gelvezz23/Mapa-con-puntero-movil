@@ -1,0 +1,197 @@
+<!-- @format -->
+
+<div id="Ubicacion">
+	<div class="jumbotron bg-light">
+		<h3 class="text-secundary text-right purple p-3 text-white">
+			<i class="fas fa-map-marker-alt"></i> Ubicación
+		</h3>
+		<div class="row h-100 p-3">
+			<!-- Mapa GoogleMaps -->
+			<div class="col-6">
+				<script src="./js/jquery.js"></script>
+
+				<div id="floating-panel">
+					<input id="latlng" type="text" value="," />
+					<input id="submit" type="text" value="Reverse Geocode" />
+					<input id="r1" type="text" value="" type="text" name="R1" />
+				</div>
+
+				<div id="map"></div>
+			</div>
+
+			<!--Datos de Ubicacion -->
+			<div class="col-6">
+				<form id="formularioUbicacion">
+					<div id="primero" class="form-group">
+						<label style="line-height: 100%;">Dirección</label>
+						<input
+							class="form-control"
+							id="direccion"
+							type="text"
+							value=""
+							name="direccion"
+						/>
+						<div class="primero">
+							<a href="#" data-toggle="modal" data-target="#EditarDireccion">
+								Editar <i class="fas fa-pen-square"></i
+							></a>
+						</div>
+					</div>
+					<div id="primero" class="form-group">
+						<label style="line-height: 100%;">Ciudad</label>
+						<input class="form-control" id="ciudad" type="text" value="" name="ciudad" />
+						<div class="primero">
+							<a href="#" data-toggle="modal" data-target="#EditarCiudad">
+								Editar <i class="fas fa-pen-square"></i
+							></a>
+						</div>
+					</div>
+					<div id="primero" class="form-group">
+						<label style="line-height: 100%;">Departamento</label>
+						<input class="form-control" id="region" type="text" value="" name="region" />
+						<div class="primero">
+							<a href="#" data-toggle="modal" data-target="#EditarDepartamento">
+								Editar <i class="fas fa-pen-square"></i
+							></a>
+						</div>
+					</div>
+					<div id="primero" class="form-group">
+						<label style="line-height: 100%;">País</label>
+						<input class="form-control" id="pais" type="text" value="" name="pais" />
+						<div class="primero">
+							<a href="#" data-toggle="modal" data-target="#EditarPais">
+								Editar <i class="fas fa-pen-square"></i
+							></a>
+						</div>
+					</div>
+					<div id="primero" class="form-group">
+						<label style="line-height: 100%;">Coordenadas Latitud</label>
+						<input class="form-control" id="lati" type="text" value="" name="latitud" />
+					</div>
+					<div id="primero" class="form-group">
+						<label style="line-height: 100%;">Coordenadas Longitud</label>
+						<input class="form-control" id="longi" type="text" value="" name="longitud" />
+					</div>
+					<div id="respuestaubicacion"></div>
+					<button id="btn_ubicacion" class="btn btn-primary">Guardar Posición</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	#map {
+		height: 500px;
+		width: 100%;
+	}
+
+	#floating-panel {
+		position: absolute;
+		top: 10px;
+		left: 25%;
+		z-index: 5;
+		background-color: #fff;
+		padding: 5px;
+		border: 1px solid #999;
+		text-align: center;
+		visibility: hidden;
+		line-height: 30px;
+		padding-left: 10px;
+	}
+	#latlng {
+		width: 225px;
+	}
+</style>
+<script src="./js/jquery.js"></script>
+
+<div id="floating-panel">
+	<input id="latlng" type="text" value="20.973276,-89.624175" />
+	<input id="submit" type="text" value="Reverse Geocode" />
+	<input id="r1" type="text" value="" type="text" name="R1" />
+</div>
+
+<div id="map"></div>
+<script>
+	function initMap(lat, lng, zoom) {
+		// lat = 20.973276, lng = -89.624175, zoom = 15
+		lat = typeof lat === 'undefined' ? 20.973276 : lat;
+		lng = typeof lng === 'undefined' ? -89.624175 : lng;
+		zoom = typeof zoom === 'undefined' ? 15 : zoom;
+		var geocoder = new google.maps.Geocoder();
+		var infowindow = new google.maps.InfoWindow();
+
+		var map = new google.maps.Map(document.getElementById('map'), {
+			zoom: zoom,
+			center: { lat: lat, lng: lng },
+		});
+
+		marker = new google.maps.Marker({
+			map: map,
+			draggable: true,
+			animation: google.maps.Animation.DROP,
+			position: {
+				lat: lat,
+				lng: lng,
+			},
+		});
+
+		// Agregamos el listener para capturar el click y movimiento del marcador
+		marker.addListener('click', function () {
+			if (marker.getAnimation() !== null) {
+				marker.setAnimation(null);
+			} else {
+				marker.setAnimation(google.maps.Animation.BOUNCE);
+			}
+		});
+
+		// Capturamos cuando la posición del marcador cambie y realizamos la acción que se requiera
+		google.maps.event.addListener(marker, 'position_changed', function () {
+			var lat = marker.getPosition().lat();
+			var lng = marker.getPosition().lng();
+			/*
+        console.log('Latitude: ' + lat);
+        console.log('Longitude: ' + lng);
+    */
+			geocodeLatLng(geocoder, map, infowindow);
+			function geocodeLatLng(geocoder, map, infowindow) {
+				var input = document.getElementById('latlng').value;
+				var latlngStr = input.split(',', 2);
+				var latlng = { lat: parseFloat(latlngStr[0]), lng: parseFloat(latlngStr[1]) };
+				geocoder.geocode({ location: latlng }, function (results, status) {
+					if (status === 'OK') {
+						if (results[0]) {
+							/*map.setZoom(13);
+                  var marker = new google.maps.Marker({
+                    position: latlng,
+                    map: map
+                  });*/
+							infowindow.setContent(results[0].formatted_address);
+							infowindow.open(map, marker);
+
+							var contenido = $('#r1').val(results[0].formatted_address);
+							var caja = $('#r1').val();
+							var vector = caja.split(',');
+							var Nvector = vector.length;
+							console.log(vector);
+							$('#ciudad').val(vector[Nvector - 3].trim());
+							$('#region').val(vector[Nvector - 2].trim());
+							$('#pais').val(vector[Nvector - 1].trim());
+						} else {
+							window.alert('No results found');
+						}
+					}
+				});
+			}
+			$('#lati').val(lat);
+			$('#longi').val(lng);
+			$('#latlng').val(lat + ',' + lng);
+		});
+	}
+	initMap();
+</script>
+<script
+	async
+	defer
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAb4CjdkPQlRtBVmIbXer58cVITwWnBrEQ&callback=initMap"
+></script>
